@@ -1,0 +1,75 @@
+global:
+  tlsDisable: false
+  openshift: false
+
+dns:
+  zone: "milabs.io"
+
+istio:
+  namespace: istio-system
+  gatewaySelector: istio-ingressgateway
+  ingressService: istio-ingressgateway
+
+vault:
+  csi:
+    enabled: true
+    extraArgs:
+      - "--vault-mount=driver"
+      - "--vault-addr=http://vault-active.vault:8200"
+  fullnameOverride: "vault"
+  injector:
+    enabled: false
+  server:
+    auditStorage:
+      enabled: true
+      size: 15Gi
+
+    extraArgs: "-config /raft/config/raft-storage.hcl"
+    extraSecretEnvironmentVars:
+      - envName: VAULT_TLS_SERVER_NAME
+        secretName: vault-env-vars
+        secretKey: VAULT_TLS_SERVER_NAME
+      - envName: VAULT_CACERT
+        secretName: vault-env-vars
+        secretKey: VAULT_CACERT
+
+    volumes:
+      - name: vault-cert
+        secret:
+          secretName: vault-cert
+      - name: vault-raft-config
+        configMap:
+          name: vault-raft-config
+
+    volumeMounts:
+      - mountPath: "/etc/vault-tls/vault-cert"
+        name: "vault-cert"
+      - mountPath: "/raft/config"
+        name: "vault-raft-config"
+
+    ha:
+      enabled: true
+      raft:
+        enabled: true
+        setNodeId: true
+        config: |
+          ui = true
+
+          service_registration "kubernetes" {}
+      replicas: 3
+    ingress:
+      enabled: false
+    logFormat: json
+    networkPolicy:
+      enabled: true
+    resources:
+      limits:
+        cpu: 750m
+        memory: 768Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+certificate:
+  clusterIssuer: letsencrypt-prod
+  ca: false

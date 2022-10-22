@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  dnsNames:
+    - '{{ print "vault.apps." .Values.dns.zone }}'
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ .Values.certificate.clusterIssuer }}
+  secretName: vault-cert

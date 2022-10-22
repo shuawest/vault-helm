@@ -1,0 +1,18 @@
+{{- if .Values.global.openshift }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: vault
+  namespace: {{ .Values.istio.namespace }}
+spec:
+  host: {{ print "vault.apps." .Values.dns.zone }}
+  port:
+    targetPort: https
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: passthrough
+  to:
+    kind: Service
+    name: {{ .Values.istio.ingressService }}
+  wildcardPolicy: None
+{{- end }}

@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  selector:
+    istio: {{ .Values.istio.gatewaySelector }}
+  servers:
+    - hosts:
+        - {{ print "vault.apps." .Values.dns.zone }}
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: PASSTHROUGH
